@@ -64,8 +64,15 @@ public class ChessPiece {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         ChessPiece piece = board.getPiece(myPosition);
         if (piece.getPieceType() == PieceType.BISHOP) {
-            return calculateBishopMoves(board, myPosition);
+            return calculateMoves(board, myPosition, DirectionVectors.DIAGONALS);
         }
+        if (piece.getPieceType() == PieceType.ROOK) {
+            return calculateMoves(board, myPosition, DirectionVectors.STRAIGHTS);
+        }
+        if (piece.getPieceType() == PieceType.QUEEN) {
+            return calculateMoves(board, myPosition, DirectionVectors.OMNIDIRECTIONAL);
+        }
+
 
         return List.of();
     }
@@ -74,28 +81,32 @@ public class ChessPiece {
         return row <= 8 && row >0 && col <= 8 && col >0;
     }
 
-    private Collection<ChessMove> calculateBishopMoves(ChessBoard board, ChessPosition myPosition) {
+    private void slidingLogic(Collection<ChessMove> moves, int[] direction, ChessBoard board, ChessPosition myPosition, int row, int col) {
+        while (isOnBoard(row, col)) {
+            ChessPiece pieceAt = board.getPiece(new ChessPosition(row, col));
+            if (pieceAt == null) {
+                moves.add(new ChessMove(myPosition, new ChessPosition(row, col), null));
+            } else {
+                if (pieceAt.getTeamColor() != pieceColor) {
+                    moves.add(new ChessMove(myPosition, new ChessPosition(row, col), null));
+                }
+                break;
+            }
+            row += direction[0];
+            col += direction[1];
+        }
+    }
+
+    private Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition myPosition, int[][] dirVectors) {
         Collection<ChessMove> moves = new ArrayList<>();
 
         int startRow = myPosition.getRow();
         int startCol = myPosition.getColumn();
-        for (int[] direction : DirectionVectors.DIAGONALS) {
+        for (int[] direction : dirVectors) {
             int row = startRow + direction[0];
             int col = startCol + direction[1];
 
-            while (isOnBoard(row, col)) {
-                ChessPiece pieceAt = board.getPiece(new ChessPosition(row, col));
-                if (pieceAt == null) {
-                    moves.add(new ChessMove(myPosition, new ChessPosition(row, col), null));
-                } else {
-                    if (pieceAt.getTeamColor() != pieceColor) {
-                        moves.add(new ChessMove(myPosition, new ChessPosition(row, col), null));
-                    }
-                    break;
-                }
-                row += direction[0];
-                col += direction[1];
-            }
+            slidingLogic(moves, direction, board, myPosition, row, col);
         }
         return moves;
     }
