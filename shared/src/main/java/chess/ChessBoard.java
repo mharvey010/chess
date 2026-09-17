@@ -3,6 +3,8 @@ package chess;
 import java.util.Arrays;
 import java.util.Objects;
 
+import static chess.ChessPiece.PieceType;
+
 /**
  * A chessboard that can hold and rearrange chess pieces.
  * <p>
@@ -41,7 +43,28 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        throw new RuntimeException("Not implemented");
+        board = new ChessPiece[8][8];
+        addMinorAndMajorPieces(0, ChessGame.TeamColor.WHITE);
+        addPawnPieces(1, ChessGame.TeamColor.WHITE);
+        addMinorAndMajorPieces(7, ChessGame.TeamColor.BLACK);
+        addPawnPieces(6, ChessGame.TeamColor.BLACK);
+    }
+
+    private void addPawnPieces(int row, ChessGame.TeamColor teamColor) {
+        for (int col = 0; col < 8; col++) {
+            ChessPosition pos = new ChessPosition(row + 1, col + 1);
+            addPiece(pos, new ChessPiece(teamColor, PieceType.PAWN));
+        }
+    }
+
+    private void addMinorAndMajorPieces(int row, ChessGame.TeamColor teamColor) {
+        ChessPiece.PieceType[] pieces = {PieceType.ROOK, PieceType.KNIGHT, PieceType.BISHOP, PieceType.QUEEN,
+                PieceType.KING, PieceType.BISHOP, PieceType.KNIGHT, PieceType.ROOK};
+
+        for (int col = 0; col < 8; col++) {
+            ChessPosition pos = new ChessPosition(row + 1, col + 1);
+            addPiece(pos, new ChessPiece(teamColor, pieces[col]));
+        }
     }
 
     @Override
