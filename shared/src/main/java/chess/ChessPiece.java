@@ -2,7 +2,6 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -35,10 +34,9 @@ public class ChessPiece {
     public static class DirectionVectors {
         public static final int[][] DIAGONALS = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
         public static final int[][] STRAIGHTS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-
         public static final int[][] OMNIDIRECTIONAL = {{1,1}, {1,-1}, {-1,1}, {-1,-1}, {1,0}, {-1,0}, {0,1}, {0,-1}};
-
         public static final int[][] KNIGHT = {{2,1}, {2,-1}, {-2,1}, {-2,-1}, {1,2}, {1,-2}, {-1,2}, {-1,-2}};
+        public static final int[][] PAWN = {{1, 1}, {1, -1}, {1, 0}};
     }
 
     /**
@@ -64,38 +62,72 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         ChessPiece piece = board.getPiece(myPosition);
-        if (piece.getPieceType() == PieceType.BISHOP) {
-            return calculateMoves(board, myPosition, DirectionVectors.DIAGONALS, true);
-        }
-        if (piece.getPieceType() == PieceType.ROOK) {
-            return calculateMoves(board, myPosition, DirectionVectors.STRAIGHTS, true);
-        }
-        if (piece.getPieceType() == PieceType.QUEEN) {
-            return calculateMoves(board, myPosition, DirectionVectors.OMNIDIRECTIONAL, true);
-        }
-        if (piece.getPieceType() == PieceType.KING) {
-            return calculateMoves(board, myPosition, DirectionVectors.OMNIDIRECTIONAL, false);
-        }
-        if (piece.getPieceType() == PieceType.KNIGHT) {
-            return calculateMoves(board, myPosition, DirectionVectors.KNIGHT, false);
-        }
-
-
-        return List.of();
+        return switch (piece.getPieceType()) {
+            case BISHOP -> calculateMoves(board, myPosition, DirectionVectors.DIAGONALS, true);
+            case ROOK -> calculateMoves(board, myPosition, DirectionVectors.STRAIGHTS, true);
+            case QUEEN -> calculateMoves(board, myPosition, DirectionVectors.OMNIDIRECTIONAL, true);
+            case KING -> calculateMoves(board, myPosition, DirectionVectors.OMNIDIRECTIONAL, false);
+            case KNIGHT -> calculateMoves(board, myPosition, DirectionVectors.KNIGHT, false);
+            case PAWN -> {
+                if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+                    yield calculatePawnMoves(board, myPosition, 1);
+                } else {
+                    yield calculatePawnMoves(board, myPosition, -1);
+                }
+            }
+        };
     }
 
     private boolean isOnBoard(int row, int col) {
         return row <= 8 && row >0 && col <= 8 && col >0;
     }
 
+    private void addPawnMove(Collection<ChessMove> moves, ChessPosition start, ChessPosition end) {
+        if (end.getRow() == 1 || end.getRow() == 8) {
+            moves.add(new ChessMove(start, end, PieceType.QUEEN));
+            moves.add(new ChessMove(start, end, PieceType.ROOK));
+            moves.add(new ChessMove(start, end, PieceType.BISHOP));
+            moves.add(new ChessMove(start, end, PieceType.KNIGHT));
+        } else {
+            moves.add(new ChessMove(start, end, null));
+        }
+    }
+
+    private Collection<ChessMove> calculatePawnMoves(ChessBoard board, ChessPosition myPosition, int upOrDown) {
+        Collection<ChessMove> moves = new ArrayList<>();
+        int startRow = myPosition.getRow();
+        int startCol = myPosition.getColumn();
+        for (int[] direction : DirectionVectors.PAWN) {
+            int row = startRow + (direction[0] * upOrDown);
+            int col = startCol + (direction[1] * upOrDown);
+            if (isOnBoard(row, col)) {
+                ChessPosition nextPosition = new ChessPosition(row, col);
+                ChessPiece pieceAt = board.getPiece(new ChessPosition(row, col));
+                if (direction == DirectionVectors.PAWN[2] && pieceAt == null) {
+                    addPawnMove(moves, myPosition, nextPosition);
+                    if (isOnBoard(row + upOrDown, col) && board.getPiece(new ChessPosition(row + upOrDown, col)) == null && (startRow == 2 || startRow == 7)) {
+                        addPawnMove(moves, myPosition, new ChessPosition(row + upOrDown, col));
+                    }
+                } else if (direction != DirectionVectors.PAWN[2]) {
+                    if (pieceAt != null && pieceAt.getTeamColor() != pieceColor) {
+                        addPawnMove(moves, myPosition, nextPosition);
+                    }
+                }
+            }
+
+        }
+        return moves;
+    }
+
     private void stepLogic(Collection<ChessMove> moves, ChessBoard board, ChessPosition myPosition, int row, int col) {
         if (isOnBoard(row, col)) {
-            ChessPiece pieceAt = board.getPiece(new ChessPosition(row, col));
+            ChessPosition nextPosition = new ChessPosition(row, col);
+            ChessPiece pieceAt = board.getPiece(nextPosition);
             if (pieceAt == null) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(row, col), null));
+                moves.add(new ChessMove(myPosition, nextPosition, null));
             } else {
                 if (pieceAt.getTeamColor() != pieceColor) {
-                    moves.add(new ChessMove(myPosition, new ChessPosition(row, col), null));
+                    moves.add(new ChessMove(myPosition, nextPosition, null));
                 }
             }
         }
@@ -103,12 +135,13 @@ public class ChessPiece {
 
     private void slidingLogic(Collection<ChessMove> moves, int[] direction, ChessBoard board, ChessPosition myPosition, int row, int col) {
         while (isOnBoard(row, col)) {
-            ChessPiece pieceAt = board.getPiece(new ChessPosition(row, col));
+            ChessPosition nextPosition = new ChessPosition(row, col);
+            ChessPiece pieceAt = board.getPiece(nextPosition);
             if (pieceAt == null) {
-                moves.add(new ChessMove(myPosition, new ChessPosition(row, col), null));
+                moves.add(new ChessMove(myPosition, nextPosition, null));
             } else {
                 if (pieceAt.getTeamColor() != pieceColor) {
-                    moves.add(new ChessMove(myPosition, new ChessPosition(row, col), null));
+                    moves.add(new ChessMove(myPosition, nextPosition, null));
                 }
                 break;
             }
