@@ -60,13 +60,14 @@ public class ChessGame {
             if (!isInCheck(teamTurn)) {
                 allValidMoves.add(move);
             }
-            undoMove();
+            undoMove(move, startPiece, targetPiece);
         }
         return allValidMoves;
     }
 
-    private void undoMove() {
-
+    private void undoMove(ChessMove move, ChessPiece startPiece, ChessPiece targetPiece) {
+        board.addPiece(move.getEndPosition(), targetPiece);
+        board.addPiece(move.getStartPosition(), startPiece);
     }
 
     private void applyMove(ChessMove move, ChessPiece startPiece) {
