@@ -65,16 +65,6 @@ public class ChessGame {
         return allValidMoves;
     }
 
-    private void undoMove(ChessMove move, ChessPiece startPiece, ChessPiece targetPiece) {
-        board.addPiece(move.getEndPosition(), targetPiece);
-        board.addPiece(move.getStartPosition(), startPiece);
-    }
-
-    private void applyMove(ChessMove move, ChessPiece startPiece) {
-        board.addPiece(move.getEndPosition(), startPiece);
-        board.addPiece(move.getStartPosition(), null);
-    }
-
     /**
      * Makes a move in the chess game
      *
@@ -88,21 +78,8 @@ public class ChessGame {
         Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
         if (validMoves.contains(move) && piece.getTeamColor() == teamTurn) {
             applyMove(move, piece);
-            teamTurn = teamTurn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
+            setTeamTurn(teamTurn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE);
         } else { throw new InvalidMoveException(); }
-    }
-
-    private ChessPosition findKing(TeamColor teamColor) {
-        for (int i = 1; i <= 8; i++) {
-            for (int j = 1; j <= 8; j++) {
-                ChessPosition piecePos = new ChessPosition(i, j);
-                ChessPiece piece = board.getPiece(piecePos);
-                if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING && piece.getTeamColor() == teamColor) {
-                    return piecePos;
-                }
-            }
-        }
-        return null;
     }
 
     /**
@@ -167,5 +144,33 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return board;
+    }
+
+    private ChessPosition findKing(TeamColor teamColor) {
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPosition piecePos = new ChessPosition(i, j);
+                ChessPiece piece = board.getPiece(piecePos);
+                if (piece != null && piece.getPieceType() == ChessPiece.PieceType.KING && piece.getTeamColor() == teamColor) {
+                    return piecePos;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void undoMove(ChessMove move, ChessPiece startPiece, ChessPiece targetPiece) {
+        board.addPiece(move.getEndPosition(), targetPiece);
+        board.addPiece(move.getStartPosition(), startPiece);
+    }
+
+    private void applyMove(ChessMove move, ChessPiece startPiece) {
+        if (move.getPromotionPiece() != null) {
+            ChessPiece promotionPiece = new ChessPiece(startPiece.getTeamColor(), move.getPromotionPiece());
+            board.addPiece(move.getEndPosition(), promotionPiece);
+        } else {
+            board.addPiece(move.getEndPosition(), startPiece);
+        }
+        board.addPiece(move.getStartPosition(), null);
     }
 }
