@@ -57,7 +57,7 @@ public class ChessGame {
             ChessPiece startPiece = board.getPiece(move.getStartPosition());
             ChessPiece targetPiece = board.getPiece(move.getEndPosition());
             applyMove(move, startPiece);
-            if (!isInCheck(teamTurn)) {
+            if (!isInCheck(startPiece.getTeamColor())) {
                 allValidMoves.add(move);
             }
             undoMove(move, startPiece, targetPiece);
