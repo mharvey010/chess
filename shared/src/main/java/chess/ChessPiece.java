@@ -36,7 +36,6 @@ public class ChessPiece {
         public static final int[][] STRAIGHTS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
         public static final int[][] OMNIDIRECTIONAL = {{1,1}, {1,-1}, {-1,1}, {-1,-1}, {1,0}, {-1,0}, {0,1}, {0,-1}};
         public static final int[][] KNIGHT = {{2,1}, {2,-1}, {-2,1}, {-2,-1}, {1,2}, {1,-2}, {-1,2}, {-1,-2}};
-        public static final int[][] PAWN = {{1, 1}, {1, -1}, {1, 0}};
     }
 
     /**
@@ -61,20 +60,13 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        ChessPiece piece = board.getPiece(myPosition);
-        return switch (piece.getPieceType()) {
-            case BISHOP -> calculateMoves(board, myPosition, DirectionVectors.DIAGONALS, true);
-            case ROOK -> calculateMoves(board, myPosition, DirectionVectors.STRAIGHTS, true);
-            case QUEEN -> calculateMoves(board, myPosition, DirectionVectors.OMNIDIRECTIONAL, true);
-            case KING -> calculateMoves(board, myPosition, DirectionVectors.OMNIDIRECTIONAL, false);
-            case KNIGHT -> calculateMoves(board, myPosition, DirectionVectors.KNIGHT, false);
-            case PAWN -> {
-                if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-                    yield calculatePawnMoves(board, myPosition, 1);
-                } else {
-                    yield calculatePawnMoves(board, myPosition, -1);
-                }
-            }
+        return switch (this.type) {
+            case BISHOP -> calculateMoves(board, myPosition, DirectionVectors.DIAGONALS, 7);
+            case ROOK -> calculateMoves(board, myPosition, DirectionVectors.STRAIGHTS, 7);
+            case QUEEN -> calculateMoves(board, myPosition, DirectionVectors.OMNIDIRECTIONAL, 7);
+            case KING -> calculateMoves(board, myPosition, DirectionVectors.OMNIDIRECTIONAL, 1);
+            case KNIGHT -> calculateMoves(board, myPosition, DirectionVectors.KNIGHT, 1);
+            case PAWN -> calculatePawnMoves(board, myPosition);
         };
     }
 
@@ -93,75 +85,56 @@ public class ChessPiece {
         }
     }
 
-    private Collection<ChessMove> calculatePawnMoves(ChessBoard board, ChessPosition myPosition, int upOrDown) {
+    Collection<ChessMove> calculatePawnMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> moves = new ArrayList<>();
-        int startRow = myPosition.getRow();
-        int startCol = myPosition.getColumn();
-        for (int[] direction : DirectionVectors.PAWN) {
-            int row = startRow + (direction[0] * upOrDown);
-            int col = startCol + (direction[1] * upOrDown);
-            if (isOnBoard(row, col)) {
-                ChessPosition nextPosition = new ChessPosition(row, col);
-                ChessPiece pieceAt = board.getPiece(new ChessPosition(row, col));
-                if (direction == DirectionVectors.PAWN[2] && pieceAt == null) {
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+
+        boolean isWhite = pieceColor == ChessGame.TeamColor.WHITE;
+        int direction = isWhite ? 1 : -1;
+        int pawnBaseRow = isWhite ? 2 : 7;
+        int rowAhead = row + direction;
+
+        if (isOnBoard(rowAhead, col) && board.getPiece(new ChessPosition(rowAhead, col)) == null) {
+            addPawnMove(moves, myPosition, new ChessPosition(rowAhead, col));
+            int twoAhead = rowAhead + direction;
+            if (row == pawnBaseRow && board.getPiece(new ChessPosition(twoAhead, col)) == null) {
+                addPawnMove(moves, myPosition, new ChessPosition(twoAhead, col));
+            }
+        }
+
+        for (int diagonal : new int[]{1, -1}) {
+            int colAhead = col + diagonal;
+            if (isOnBoard(rowAhead, colAhead)) {
+                ChessPosition nextPosition = new ChessPosition(rowAhead, colAhead);
+                ChessPiece pieceAt = board.getPiece(nextPosition);
+                if (pieceAt != null && pieceAt.getTeamColor() != pieceColor) {
                     addPawnMove(moves, myPosition, nextPosition);
-                    if (isOnBoard(row + upOrDown, col) && board.getPiece(new ChessPosition(row + upOrDown, col)) == null && (startRow == 2 || startRow == 7)) {
-                        addPawnMove(moves, myPosition, new ChessPosition(row + upOrDown, col));
-                    }
-                } else if (direction != DirectionVectors.PAWN[2]) {
-                    if (pieceAt != null && pieceAt.getTeamColor() != pieceColor) {
-                        addPawnMove(moves, myPosition, nextPosition);
-                    }
                 }
             }
-
         }
+
         return moves;
     }
 
-    private void stepLogic(Collection<ChessMove> moves, ChessBoard board, ChessPosition myPosition, int row, int col) {
-        if (isOnBoard(row, col)) {
-            ChessPosition nextPosition = new ChessPosition(row, col);
-            ChessPiece pieceAt = board.getPiece(nextPosition);
-            if (pieceAt == null) {
-                moves.add(new ChessMove(myPosition, nextPosition, null));
-            } else {
-                if (pieceAt.getTeamColor() != pieceColor) {
-                    moves.add(new ChessMove(myPosition, nextPosition, null));
-                }
-            }
-        }
-    }
-
-    private void slidingLogic(Collection<ChessMove> moves, int[] direction, ChessBoard board, ChessPosition myPosition, int row, int col) {
-        while (isOnBoard(row, col)) {
-            ChessPosition nextPosition = new ChessPosition(row, col);
-            ChessPiece pieceAt = board.getPiece(nextPosition);
-            if (pieceAt == null) {
-                moves.add(new ChessMove(myPosition, nextPosition, null));
-            } else {
-                if (pieceAt.getTeamColor() != pieceColor) {
-                    moves.add(new ChessMove(myPosition, nextPosition, null));
-                }
-                break;
-            }
-            row += direction[0];
-            col += direction[1];
-        }
-    }
-
-    private Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition myPosition, int[][] dirVectors, boolean slide) {
+    Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition myPosition, int[][] dirVectors, int maxSteps) {
         Collection<ChessMove> moves = new ArrayList<>();
-
-        int startRow = myPosition.getRow();
-        int startCol = myPosition.getColumn();
         for (int[] direction : dirVectors) {
-            int row = startRow + direction[0];
-            int col = startCol + direction[1];
-            if (slide) {
-                slidingLogic(moves, direction, board, myPosition, row, col);
-            } else {
-                stepLogic(moves, board, myPosition, row, col);
+            for (int step = 1; step <= maxSteps; step++) {
+                int row = myPosition.getRow() + direction[0] * step;
+                int col = myPosition.getColumn() + direction[1] * step;
+                if (!isOnBoard(row, col)) {
+                    break;
+                }
+
+                ChessPosition nextPosition = new ChessPosition(row, col);
+                ChessPiece pieceAt = board.getPiece(nextPosition);
+                if (pieceAt == null || pieceAt.getTeamColor() != pieceColor) {
+                    moves.add(new ChessMove(myPosition, nextPosition, null));
+                }
+                if (pieceAt != null) {
+                    break;
+                }
             }
         }
         return moves;
