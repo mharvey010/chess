@@ -5,9 +5,9 @@ import model.*;
 import java.util.Collection;
 
 public interface GameDAO {
-    GameData createGame(String whiteUsername, String blackUsername, String gameName);
-    GameData getGame(int gameID);
-    GameData updateGame(int gameID, int newGameID);
+    void createGame(GameData game);
+    GameData getGame(int gameID) throws DataAccessException;
+    void updateGame(int gameID, GameData newGame) throws DataAccessException;
     Collection<GameData> listGames();
     void clear();
 }
