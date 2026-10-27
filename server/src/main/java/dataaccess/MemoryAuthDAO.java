@@ -12,9 +12,6 @@ public class MemoryAuthDAO implements AuthDAO {
     }
 
     public AuthData getAuth(String authToken) throws DataAccessException {
-        if (!auths.containsKey(authToken)) {
-            throw new DataAccessException("Not Authorized");
-        }
         return auths.get(authToken);
     }
 

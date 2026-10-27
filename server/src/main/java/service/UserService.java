@@ -14,9 +14,12 @@ public class UserService {
         this.authDAO = authDAO;
     }
 
-    public AuthData register(UserData request) throws DataAccessException {
+    public AuthData register(UserData request) throws Exception {
         if (userDAO.getUser(request.username()) != null) {
-            throw new DataAccessException("Username already taken");
+            throw new AlreadyTakenException();
+        }
+        if (request.username() == null || request.password() == null || request.email() == null) {
+            throw new BadRequestException();
         }
         UserData newUser = new UserData(request.username(), request.password(), request.email());
         userDAO.createUser(newUser);
