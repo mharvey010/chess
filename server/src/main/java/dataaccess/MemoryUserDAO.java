@@ -15,10 +15,7 @@ public class MemoryUserDAO implements UserDAO{
     }
 
     public UserData getUser(String username) throws DataAccessException {
-        if (!users.containsKey(username)) {
-            throw new DataAccessException("No account by that username");
-        }
-        return users.get(username);
+        return users.getOrDefault(username, null);
     }
 
     public void clear() {
