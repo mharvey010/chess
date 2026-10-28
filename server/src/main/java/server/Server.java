@@ -18,7 +18,7 @@ public class Server {
     private final AuthDAO authDAO = new MemoryAuthDAO();
     private final ClearService clearService = new ClearService(userDAO, gameDAO, authDAO);
     private final UserService userService = new UserService(userDAO, authDAO);
-    private final GameService gameService = new GameService(userDAO, gameDAO, authDAO);
+    private final GameService gameService = new GameService(gameDAO, authDAO);
     private final Gson gson = new Gson();
 
     public Server() {
@@ -31,6 +31,7 @@ public class Server {
         javalin.delete("/session", this::logout);
         javalin.get("/game", this::listGames);
         javalin.post("/game", this::createGame);
+        javalin.put("/game", this::joinGame);
 
 
         javalin.exception(BadRequestException.class, (e, ctx) ->

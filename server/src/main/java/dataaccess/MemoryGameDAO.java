@@ -1,6 +1,5 @@
 package dataaccess;
 
-import model.AuthData;
 import model.GameData;
 
 import java.util.ArrayList;
@@ -19,16 +18,10 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     public GameData getGame(int gameID) throws DataAccessException {
-        if (!games.containsKey(gameID)) {
-            throw new DataAccessException("That game does not exist");
-        }
         return games.get(gameID);
     }
 
     public void updateGame(int gameID, GameData newGame) throws DataAccessException {
-        if (!games.containsKey(gameID)) {
-            throw new DataAccessException("That game does not exist");
-        }
         games.put(gameID, newGame);
     }
 
