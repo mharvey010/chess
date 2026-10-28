@@ -7,6 +7,8 @@ import dataaccess.*;
 import model.*;
 import org.jetbrains.annotations.NotNull;
 import service.*;
+
+import java.util.Collection;
 import java.util.Map;
 
 public class Server {
@@ -17,6 +19,7 @@ public class Server {
     private final AuthDAO authDAO = new MemoryAuthDAO();
     private final ClearService clearService = new ClearService(userDAO, gameDAO, authDAO);
     private final UserService userService = new UserService(userDAO, authDAO);
+    private final GameService gameService = new GameService(userDAO, gameDAO, authDAO);
     private final Gson gson = new Gson();
 
     public Server() {
@@ -27,6 +30,7 @@ public class Server {
         javalin.post("/user", this::register);
         javalin.post("/session", this::login);
         javalin.delete("/session", this::logout);
+        javalin.get("/game", this::listGames);
 
 
         javalin.exception(BadRequestException.class, (e, ctx) ->
@@ -59,6 +63,11 @@ public class Server {
     private void logout(Context ctx) throws Exception{
         userService.logout(ctx.header("authorization"));
         ctx.json("{}");
+    }
+
+    private void listGames(Context ctx) throws Exception{
+        Collection<GameData> games = gameService.listGames(ctx.header("authorization"));
+        ctx.result(gson.toJson(Map.of("games", games)));
     }
 
     private void clearApplication(Context ctx) {
