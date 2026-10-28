@@ -6,13 +6,16 @@ import model.GameData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 
 public class MemoryGameDAO implements GameDAO {
+    private int nextID = 1;
     private final HashMap<Integer, GameData> games = new HashMap<>();
 
-    public void createGame(GameData game) {
-        games.put(game.gameID(), game);
+    public int createGame(String gameName) {
+        int gameID = nextID++;
+        GameData newGame = new GameData(gameID, null, null, gameName, new chess.ChessGame());
+        games.put(gameID, newGame);
+        return gameID;
     }
 
     public GameData getGame(int gameID) throws DataAccessException {

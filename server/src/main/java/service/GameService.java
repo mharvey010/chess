@@ -22,4 +22,14 @@ public class GameService {
         }
         return gameDAO.listGames();
     }
+
+    public int createGame(String token, String gameName) throws Exception {
+        if (authDAO.getAuth(token) == null) {
+            throw new UnauthorizedException();
+        }
+        if (gameName == null) {
+            throw new BadRequestException();
+        }
+        return gameDAO.createGame(gameName);
+    }
 }

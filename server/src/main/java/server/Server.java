@@ -5,7 +5,6 @@ import io.javalin.*;
 import io.javalin.http.Context;
 import dataaccess.*;
 import model.*;
-import org.jetbrains.annotations.NotNull;
 import service.*;
 
 import java.util.Collection;
@@ -31,6 +30,7 @@ public class Server {
         javalin.post("/session", this::login);
         javalin.delete("/session", this::logout);
         javalin.get("/game", this::listGames);
+        javalin.post("/game", this::createGame);
 
 
         javalin.exception(BadRequestException.class, (e, ctx) ->
@@ -60,14 +60,26 @@ public class Server {
         ctx.result(gson.toJson(result));
     }
 
-    private void logout(Context ctx) throws Exception{
+    private void logout(Context ctx) throws Exception {
         userService.logout(ctx.header("authorization"));
         ctx.json("{}");
     }
 
-    private void listGames(Context ctx) throws Exception{
+    private void listGames(Context ctx) throws Exception {
         Collection<GameData> games = gameService.listGames(ctx.header("authorization"));
         ctx.result(gson.toJson(Map.of("games", games)));
+    }
+
+    private void createGame(Context ctx) throws Exception {
+        String gameName = gson.fromJson(ctx.body(), GameData.class).gameName();
+        int result = gameService.createGame(ctx.header("authorization"), gameName);
+        ctx.result(gson.toJson(Map.of("gameID", result)));
+    }
+
+    private void joinGame(Context ctx) throws Exception {
+        JoinGameRequest joinGameRequest = gson.fromJson(ctx.body(), JoinGameRequest.class);
+        gameService.joinGame(ctx.header("authorization"), joinGameRequest);
+        ctx.json("{}");
     }
 
     private void clearApplication(Context ctx) {
