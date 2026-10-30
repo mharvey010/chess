@@ -2,6 +2,7 @@ package dataaccess;
 
 import model.GameData;
 
+import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -10,7 +11,7 @@ public class MemoryGameDAO implements GameDAO {
     private int nextID = 1;
     private final HashMap<Integer, GameData> games = new HashMap<>();
 
-    public int createGame(String gameName) {
+    public int createGame(String gameName) throws DataAccessException {
         int gameID = nextID++;
         GameData newGame = new GameData(gameID, null, null, gameName, new chess.ChessGame());
         games.put(gameID, newGame);
@@ -25,7 +26,7 @@ public class MemoryGameDAO implements GameDAO {
         games.put(gameID, newGame);
     }
 
-    public Collection<GameData> listGames() {
+    public Collection<GameData> listGames() throws DataAccessException {
         return new ArrayList<>(games.values());
     }
 
