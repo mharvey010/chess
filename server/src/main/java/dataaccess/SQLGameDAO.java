@@ -23,7 +23,7 @@ public class SQLGameDAO implements GameDAO {
         return List.of();
     }
 
-    public void clear() {
+    public void clear() throws DataAccessException {
 
     }
 }

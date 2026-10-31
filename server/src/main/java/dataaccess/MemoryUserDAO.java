@@ -15,7 +15,7 @@ public class MemoryUserDAO implements UserDAO{
         return users.getOrDefault(username, null);
     }
 
-    public void clear() {
+    public void clear() throws DataAccessException {
         users.clear();
     }
 }

@@ -40,6 +40,8 @@ public class Server {
                 ctx.status(403).json(gson.toJson(Map.of("message", "Error: already taken"))));
         javalin.exception(UnauthorizedException.class, (e, ctx) ->
                 ctx.status(401).json(gson.toJson(Map.of("message", "Error: unauthorized"))));
+        javalin.exception(DataAccessException.class, (e, ctx) ->
+                ctx.status(500).json(gson.toJson(Map.of("message", "Error: " + e.getMessage()))));
     }
 
     public int run(int desiredPort) {

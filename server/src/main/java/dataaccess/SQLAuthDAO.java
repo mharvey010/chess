@@ -15,7 +15,7 @@ public class SQLAuthDAO implements AuthDAO{
 
     }
 
-    public void clear() {
+    public void clear() throws DataAccessException {
 
     }
 }
