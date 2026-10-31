@@ -28,12 +28,19 @@ public class SQLGameDAO implements GameDAO {
     }
 
     public void clear() throws DataAccessException {
-
+        try (var conn = DatabaseManager.getConnection()) {
+            String statement = "TRUNCATE TABLE games";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.executeUpdate();
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     private static final String createStatement =
         """
-        CREATE TABLE IF NOT EXISTS users (
+        CREATE TABLE IF NOT EXISTS games (
             id INT NOT NULL AUTO_INCREMENT,
             white_username VARCHAR(32),
             black_username VARCHAR(32),

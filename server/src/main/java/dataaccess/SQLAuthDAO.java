@@ -20,7 +20,14 @@ public class SQLAuthDAO implements AuthDAO{
     }
 
     public void clear() throws DataAccessException {
-
+        try (var conn = DatabaseManager.getConnection()) {
+            String statement = "TRUNCATE TABLE auth_tokens";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.executeUpdate();
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     private static final String createStatement =

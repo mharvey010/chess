@@ -39,7 +39,14 @@ public class SQLUserDAO implements UserDAO {
     }
 
     public void clear() throws DataAccessException {
-
+        try (var conn = DatabaseManager.getConnection()) {
+            String statement = "TRUNCATE TABLE users";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.executeUpdate();
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     private static final String createStatement =
