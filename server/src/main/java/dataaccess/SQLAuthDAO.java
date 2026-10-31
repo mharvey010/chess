@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.AuthData;
+import model.UserData;
 
 public class SQLAuthDAO implements AuthDAO{
     public SQLAuthDAO() {
@@ -24,7 +25,22 @@ public class SQLAuthDAO implements AuthDAO{
     }
 
     public AuthData getAuth(String authToken) throws DataAccessException {
-        return null;
+        try (var conn = DatabaseManager.getConnection()) {
+            String statement = "SELECT * FROM auth_tokens WHERE auth_token = ?;";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, authToken);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String auth = rs.getString(1);
+                        String username = rs.getString(2);
+                        return new AuthData(auth, username);
+                    }
+                    return null;
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     public void deleteAuth(String authToken) throws DataAccessException {
