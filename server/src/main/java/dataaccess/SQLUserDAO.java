@@ -4,16 +4,20 @@ import model.UserData;
 
 public class SQLUserDAO implements UserDAO {
 
-    public SQLUserDAO() throws DataAccessException {
-        configureDatabase();
+    public SQLUserDAO() {
+        try {
+            configureDatabase();
+        } catch (DataAccessException _) {
+        }
     }
 
     public void createUser(UserData user) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            String statement = "INSERT INTO users (username, password) VALUES (?, ?);";
+            String statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?);";
             try (var ps = conn.prepareStatement(statement)) {
                 ps.setString(1, user.username());
                 ps.setString(2, user.password());
+                ps.setString(3, user.email());
                 ps.executeUpdate();
             }
         } catch (Exception e) {
@@ -27,10 +31,13 @@ public class SQLUserDAO implements UserDAO {
             try (var ps = conn.prepareStatement(statement)) {
                 ps.setString(1, username);
                 try (var rs = ps.executeQuery()) {
-                    String name = rs.getString(1);
-                    String pass = rs.getString(2);
-                    String email = rs.getString(3);
-                    return new UserData(name, pass, email);
+                    if (rs.next()) {
+                        String name = rs.getString(1);
+                        String pass = rs.getString(2);
+                        String email = rs.getString(3);
+                        return new UserData(name, pass, email);
+                    }
+                    return null;
                 }
             }
         } catch (Exception e) {

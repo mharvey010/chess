@@ -7,8 +7,11 @@ import java.util.List;
 
 public class SQLGameDAO implements GameDAO {
 
-    public SQLGameDAO() throws DataAccessException{
-        configureDatabase();
+    public SQLGameDAO() {
+        try {
+            configureDatabase();
+        } catch (DataAccessException _) {
+        }
     }
 
     public int createGame(String gameName) throws DataAccessException {

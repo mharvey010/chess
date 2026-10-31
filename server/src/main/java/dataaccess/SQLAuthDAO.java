@@ -3,8 +3,11 @@ package dataaccess;
 import model.AuthData;
 
 public class SQLAuthDAO implements AuthDAO{
-    public SQLAuthDAO() throws DataAccessException {
-        configureDatabase();
+    public SQLAuthDAO() {
+        try {
+            configureDatabase();
+        } catch (DataAccessException _) {
+        }
     }
 
     public void createAuth(AuthData auth) throws DataAccessException {

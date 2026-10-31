@@ -13,9 +13,9 @@ import java.util.Map;
 public class Server {
 
     private final Javalin javalin;
-    private final UserDAO userDAO = new MemoryUserDAO();
-    private final GameDAO gameDAO = new MemoryGameDAO();
-    private final AuthDAO authDAO = new MemoryAuthDAO();
+    private final UserDAO userDAO = new SQLUserDAO();
+    private final GameDAO gameDAO = new SQLGameDAO();
+    private final AuthDAO authDAO = new SQLAuthDAO();
     private final ClearService clearService = new ClearService(userDAO, gameDAO, authDAO);
     private final UserService userService = new UserService(userDAO, authDAO);
     private final GameService gameService = new GameService(gameDAO, authDAO);
