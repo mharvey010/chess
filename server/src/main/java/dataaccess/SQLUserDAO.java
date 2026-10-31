@@ -5,7 +5,16 @@ import model.UserData;
 public class SQLUserDAO implements UserDAO {
 
     public void createUser(UserData user) throws DataAccessException {
-
+        try (var conn = DatabaseManager.getConnection()) {
+            String statement = "INSERT INTO users (username, password) VALUES (?, ?);";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, user.username());
+                ps.setString(2, user.password());
+                ps.executeUpdate();
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     public UserData getUser(String username) throws DataAccessException {
@@ -21,7 +30,8 @@ public class SQLUserDAO implements UserDAO {
         CREATE TABLE IF NOT EXISTS users (
             username VARCHAR(32) NOT NULL,
             password CHAR(60) NOT NULL,
-            PRIMARY KEY (username),
+            email VARCHAR(255) NOT NULL,
+            PRIMARY KEY (username)
         );
         """
     ;

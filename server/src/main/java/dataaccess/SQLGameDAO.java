@@ -33,9 +33,9 @@ public class SQLGameDAO implements GameDAO {
                 id INT NOT NULL AUTO_INCREMENT,
                 white_username VARCHAR(32),
                 black_username VARCHAR(32),
-                game_name VARCHAR(30),
-                game
-                PRIMARY KEY (id),
+                game_name VARCHAR(30) NOT NULL,
+                game TEXT NOT NULL
+                PRIMARY KEY (id)
             );
             """
             ;
