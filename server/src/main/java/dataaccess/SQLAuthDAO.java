@@ -8,7 +8,16 @@ public class SQLAuthDAO implements AuthDAO{
     }
 
     public void createAuth(AuthData auth) throws DataAccessException {
-
+        try (var conn = DatabaseManager.getConnection()) {
+            String statement = "INSERT INTO auth_tokens (auth_token, username) VALUES (?, ?);";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, auth.authToken());
+                ps.setString(2, auth.username());
+                ps.executeUpdate();
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     public AuthData getAuth(String authToken) throws DataAccessException {
