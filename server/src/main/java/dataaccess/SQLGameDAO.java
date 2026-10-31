@@ -26,4 +26,17 @@ public class SQLGameDAO implements GameDAO {
     public void clear() throws DataAccessException {
 
     }
+
+    private final String createStatement =
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                id INT NOT NULL AUTO_INCREMENT,
+                white_username VARCHAR(32),
+                black_username VARCHAR(32),
+                game_name VARCHAR(30),
+                game
+                PRIMARY KEY (id),
+            );
+            """
+            ;
 }

@@ -18,4 +18,14 @@ public class SQLAuthDAO implements AuthDAO{
     public void clear() throws DataAccessException {
 
     }
+
+    private final String createStatement =
+            """
+            CREATE TABLE IF NOT EXISTS auth_tokens (
+                auth_token CHAR(36) NOT NULL,
+                username VARCHAR(32) NOT NULL,
+                PRIMARY KEY (auth_token),
+            );
+            """
+            ;
 }
