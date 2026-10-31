@@ -18,7 +18,20 @@ public class SQLUserDAO implements UserDAO {
     }
 
     public UserData getUser(String username) throws DataAccessException {
-        return null;
+        try (var conn = DatabaseManager.getConnection()) {
+            String statement = "SELECT * FROM users WHERE username = ?;";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, username);
+                try (var rs = ps.executeQuery()) {
+                    String name = rs.getString(1);
+                    String pass = rs.getString(2);
+                    String email = rs.getString(3);
+                    return new UserData(name, pass, email);
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     public void clear() throws DataAccessException {
