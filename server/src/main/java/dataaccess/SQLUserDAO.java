@@ -6,7 +6,7 @@ public class SQLUserDAO implements UserDAO {
 
     public SQLUserDAO() {
         try {
-            configureDatabase();
+            SQLTableSetup.configureDatabase(CREATE_STATEMENT);
         } catch (DataAccessException _) {
         }
     }
@@ -56,7 +56,7 @@ public class SQLUserDAO implements UserDAO {
         }
     }
 
-    private static final String createStatement =
+    private static final String CREATE_STATEMENT =
         """
         CREATE TABLE IF NOT EXISTS users (
             username VARCHAR(32) NOT NULL,
@@ -66,15 +66,4 @@ public class SQLUserDAO implements UserDAO {
         );
         """
     ;
-
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement(createStatement)) {
-                preparedStatement.executeUpdate();
-            }
-        } catch (Exception e) {
-            throw new DataAccessException(e.getMessage());
-        }
-    }
 }

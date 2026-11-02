@@ -5,7 +5,7 @@ import model.AuthData;
 public class SQLAuthDAO implements AuthDAO{
     public SQLAuthDAO() {
         try {
-            configureDatabase();
+            SQLTableSetup.configureDatabase(CREATE_STATEMENT);
         } catch (DataAccessException _) {
         }
     }
@@ -65,7 +65,7 @@ public class SQLAuthDAO implements AuthDAO{
         }
     }
 
-    private static final String createStatement =
+    private static final String CREATE_STATEMENT =
         """
         CREATE TABLE IF NOT EXISTS auth_tokens (
             auth_token CHAR(36) NOT NULL,
@@ -74,15 +74,4 @@ public class SQLAuthDAO implements AuthDAO{
         );
         """
         ;
-
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement(createStatement)) {
-                preparedStatement.executeUpdate();
-            }
-        } catch (Exception e) {
-            throw new DataAccessException(e.getMessage());
-        }
-    }
 }

@@ -12,7 +12,7 @@ public class SQLGameDAO implements GameDAO {
 
     public SQLGameDAO() {
         try {
-            configureDatabase();
+            SQLTableSetup.configureDatabase(CREATE_STATEMENT);
         } catch (DataAccessException _) {
         }
     }
@@ -112,7 +112,7 @@ public class SQLGameDAO implements GameDAO {
         }
     }
 
-    private static final String createStatement =
+    private static final String CREATE_STATEMENT =
         """
         CREATE TABLE IF NOT EXISTS games (
             id INT NOT NULL AUTO_INCREMENT,
@@ -124,15 +124,4 @@ public class SQLGameDAO implements GameDAO {
         );
         """
         ;
-
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement(createStatement)) {
-                preparedStatement.executeUpdate();
-            }
-        } catch (Exception e) {
-            throw new DataAccessException(e.getMessage());
-        }
-    }
 }
