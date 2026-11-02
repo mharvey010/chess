@@ -85,13 +85,8 @@ public class Server {
         ctx.json("{}");
     }
 
-    private void clearApplication(Context ctx) {
-        try {
+    private void clearApplication(Context ctx) throws Exception {
             clearService.clear();
             ctx.json("{}");
-        } catch (DataAccessException e) {
-            ctx.status(500);
-        }
     }
-
 }
