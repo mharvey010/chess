@@ -1,8 +1,10 @@
-package dataaccess;
+package dataaccess.sql;
 
+import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import model.AuthData;
 
-public class SQLAuthDAO implements AuthDAO{
+public class SQLAuthDAO implements AuthDAO {
     public SQLAuthDAO() {
         try {
             SQLTableSetup.configureDatabase(CREATE_STATEMENT);

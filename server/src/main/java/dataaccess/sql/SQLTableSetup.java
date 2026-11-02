@@ -1,4 +1,6 @@
-package dataaccess;
+package dataaccess.sql;
+
+import dataaccess.DataAccessException;
 
 public class SQLTableSetup {
     static public void configureDatabase(String createStatement) throws DataAccessException {
