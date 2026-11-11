@@ -35,10 +35,12 @@ public class ServerFacade {
     }
 
     public Collection<GameData> listGames(String authToken) throws Exception {
-
+        var request = buildRequest("GET", "/game", null, authToken);
+        var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        return handleResponse(response, ListGamesResult.class).games();
     }
 
-    public void createGame(String authToken) throws Exception {
+    public int createGame(String authToken) throws Exception {
     }
 
     public void joinGame(String authToken) throws Exception {

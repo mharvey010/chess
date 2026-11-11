@@ -78,4 +78,9 @@ public class ServerFacadeTests {
         serverFacade.logout(existingAuth);
         assertThrows(Exception.class, () -> serverFacade.logout(existingAuth));
     }
+
+    @Test
+    public void listGames() throws Exception {
+        var result = serverFacade.listGames(existingAuth);
+    }
 }
