@@ -19,6 +19,11 @@ public class ServerFacadeTests {
         System.out.println("Started test HTTP server on " + port);
     }
 
+    @BeforeEach
+    public void setup() throws Exception {
+        serverFacade.clearApplication();
+    }
+
     @AfterAll
     static void stopServer() {
         server.stop();
@@ -31,12 +36,28 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void registerUserSuccess() throws Exception {
-        UserData user = new UserData("new_user", "supersecret", "chumpy@notanemail.com");
+    void registerSuccess() throws Exception {
+        UserData user = new UserData("new_user", "secret", "email@zmail.com");
         AuthData returnedAuth = serverFacade.register(user);
         assertNotNull(returnedAuth);
         assertNotNull(returnedAuth.authToken());
         assertEquals(user.username(), returnedAuth.username());
     }
 
+    @Test
+    void registerDuplicateFail() throws Exception {
+        UserData existingUser = new UserData("existingUser", "p1", "e1");
+        serverFacade.register(existingUser);
+        assertThrows(Exception.class, () -> serverFacade.register(existingUser));
+    }
+
+    @Test
+    void loginSuccess() throws Exception {
+        UserData existingUser = new UserData("new_user", "secret", "email@zmail.com");
+        serverFacade.register(existingUser);
+        AuthData auth = serverFacade.login(existingUser);
+        assertNotNull(auth);
+        assertNotNull(auth.authToken());
+        assertEquals(existingUser.username(), auth.username());
+    }
 }
