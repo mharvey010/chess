@@ -3,6 +3,7 @@ package client;
 import com.google.gson.Gson;
 import java.net.URI;
 import java.net.http.*;
+import java.util.Collection;
 import java.util.Map;
 
 import model.*;
@@ -16,40 +17,47 @@ public class ServerFacade {
     }
 
     public AuthData register(UserData userInfo) throws Exception {
-        var request = buildRequest("POST", "/user", userInfo);
+        var request = buildRequest("POST", "/user", userInfo, null);
         var response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return handleResponse(response, AuthData.class);
     }
 
     public AuthData login(UserData userInfo) throws Exception {
-        var request = buildRequest("POST", "/session", userInfo);
+        var request = buildRequest("POST", "/session", userInfo, null);
         var response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return handleResponse(response, AuthData.class);
     }
 
-    private void logout() throws Exception {
+    public void logout(String authToken) throws Exception {
+        var request = buildRequest("DELETE", "/session", null, authToken);
+        var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        handleResponse(response, null);
     }
 
-    private void listGames() throws Exception {
+    public Collection<GameData> listGames(String authToken) throws Exception {
+
     }
 
-    private void createGame() throws Exception {
+    public void createGame(String authToken) throws Exception {
     }
 
-    private void joinGame() throws Exception {
+    public void joinGame(String authToken) throws Exception {
     }
 
     public void clearApplication() throws Exception {
-        var request = buildRequest("DELETE", "/db", null);
+        var request = buildRequest("DELETE", "/db", null, null);
         client.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
-    private HttpRequest buildRequest(String method, String path, Object body) {
+    private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + path))
                 .method(method, HttpRequest.BodyPublishers.ofString(new Gson().toJson(body)));
         if (body != null) {
             request.setHeader("Content-Type", "application/json");
+        }
+        if (authToken != null) {
+            request.setHeader("authorization", authToken);
         }
         return request.build();
     }
@@ -58,10 +66,8 @@ public class ServerFacade {
         var status = response.statusCode();
         if (!isSuccessful(status)) {
             var body = response.body();
-            if (body != null) {
-                var error = new Gson().fromJson(body, Map.class);
-                throw new Exception(error.get("message").toString());
-            }
+            var error = new Gson().fromJson(body, Map.class);
+            throw new Exception(error.get("message").toString());
         }
         if (responseClass != null) {
             return new Gson().fromJson(response.body(), responseClass);
