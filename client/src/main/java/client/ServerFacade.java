@@ -48,7 +48,10 @@ public class ServerFacade {
         return result.gameID();
     }
 
-    public void joinGame(String authToken) throws Exception {
+    public void joinGame(String authToken, JoinGameRequest joinRequest) throws Exception {
+        var request = buildRequest("PUT", "/game", joinRequest, authToken);
+        var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        handleResponse(response, null);
     }
 
     public void clearApplication() throws Exception {

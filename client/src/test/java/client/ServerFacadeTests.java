@@ -3,6 +3,7 @@ package client;
 import model.*;
 import org.junit.jupiter.api.*;
 import server.Server;
+import java.util.Collection;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -12,6 +13,7 @@ public class ServerFacadeTests {
     private static ServerFacade serverFacade;
     private static UserData existingUser;
     private static String existingAuth;
+    private static CreateGameRequest createRequest;
 
     @BeforeAll
     public static void init() {
@@ -19,6 +21,7 @@ public class ServerFacadeTests {
         var port = server.run(0);
         serverFacade = new ServerFacade(String.format("http://localhost:%d", port));
         existingUser = new UserData("existing_user", "secret", "email@zmail.com");
+        createRequest = new CreateGameRequest("game1");
         System.out.println("Started test HTTP server on " + port);
     }
 
@@ -86,11 +89,62 @@ public class ServerFacadeTests {
     public void createGameSuccess() throws Exception {
         int result = serverFacade.createGame(existingAuth, new CreateGameRequest("game1"));
 
-        Assertions.assertTrue(result > 0, "Result returned invalid game ID");
+        assertTrue(result > 0, "Result returned invalid game ID");
     }
 
     @Test
-    public void listGames() throws Exception {
-        var result = serverFacade.listGames(existingAuth);
+    public void createGameUnauthorized() throws Exception {
+        //log out user so auth is invalid
+        serverFacade.logout(existingAuth);
+
+        assertThrows(Exception.class, () -> serverFacade.createGame(existingAuth, createRequest));
+    }
+
+    @Test
+    public void createGameBadRequest() {
+        CreateGameRequest badRequest = new CreateGameRequest(null);
+
+        assertThrows(Exception.class, () -> serverFacade.createGame(existingAuth, badRequest));
+    }
+
+    @Test
+    public void listGamesEmpty() throws Exception {
+        Collection<GameData> result = serverFacade.listGames(existingAuth);
+
+        assertNotNull(result, "List result did not contain an empty game list");
+        assertEquals(0, result.size(), "Found games when none should be there");
+    }
+
+    @Test
+    public void joinGameSuccess() throws Exception {
+        //create game
+        int createResult = serverFacade.createGame(existingAuth, createRequest);
+
+        //join as white
+        JoinGameRequest joinRequest = new JoinGameRequest("WHITE", createResult);
+
+        //try join
+        serverFacade.joinGame(existingAuth, joinRequest);
+
+        Collection<GameData> games = serverFacade.listGames(existingAuth);
+        for (GameData game : games) {
+            Assertions.assertNotEquals(0, games.size(), "List result did not contain games");
+            Assertions.assertEquals(1, games.size(), "List result is incorrect size");
+            Assertions.assertEquals(existingUser.username(), game.whiteUsername(),
+                    "Username of joined player not present in list result");
+            Assertions.assertNull(game.blackUsername(), "Username present on non-joined color");
+            break;
+        }
+    }
+
+    @Test
+    public void joinGameUnauthorized() throws Exception {
+        //create game
+        int createResult = serverFacade.createGame(existingAuth, createRequest);
+
+        //try join as white
+        JoinGameRequest joinRequest = new JoinGameRequest("WHITE", createResult);
+
+        assertThrows(Exception.class, () -> serverFacade.joinGame(existingAuth + "bad stuff", joinRequest));
     }
 }
