@@ -12,46 +12,21 @@ public class REPL {
 
     public void run() {
         System.out.println("Chess Game :)");
-        System.out.print(help());
+        System.out.print(client.help());
 
         Scanner scanner = new Scanner(System.in);
         var result = "";
         while (!result.equals("quit")) {
             System.out.print("\n" + RESET_TEXT_COLOR + RESET_BG_COLOR + ">>> ");
-            result = scanner.nextLine();
-            if (result.equals("register")) {
-                System.out.print("congrats you have registered");
+            String line = scanner.nextLine();
+            try {
+                result = client.eval(line);
+                System.out.print(result);
+            } catch (Throwable e) {
+                var msg = e.toString();
+                System.out.print(msg);
             }
-            if (result.equals("help")) {
-                System.out.print(help());
-            }
-//            try {
-//                result = client.eval(line);
-//                System.out.print(result);
-//            } catch (Throwable e) {
-//                var msg = e.toString();
-//                System.out.print(msg);
-//            }
         }
         System.out.println();
-    }
-
-    public String help() {
-        if (true) {
-            return """
-                    - register <USERNAME> <PASSWORD> <EMAIL>
-                    - login <USERNAME> <PASSWORD>
-                    - quit
-                    - help
-                    """;
-        }
-        return """
-                - list
-                - adopt <pet id>
-                - rescue <name> <CAT|DOG|FROG|FISH>
-                - adoptAll
-                - signOut
-                - quit
-                """;
     }
 }
