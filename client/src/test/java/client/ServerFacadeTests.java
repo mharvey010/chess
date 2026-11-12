@@ -46,6 +46,7 @@ public class ServerFacadeTests {
     void registerSuccess() throws Exception {
         UserData newUser = new UserData("new_user", "p1", "e1");
         AuthData returnedAuth = serverFacade.register(newUser);
+
         assertNotNull(returnedAuth);
         assertNotNull(returnedAuth.authToken());
         assertEquals(newUser.username(), returnedAuth.username());
@@ -59,6 +60,7 @@ public class ServerFacadeTests {
     @Test
     void loginSuccess() throws Exception {
         AuthData auth = serverFacade.login(existingUser);
+
         assertNotNull(auth);
         assertNotNull(auth.authToken());
         assertEquals(existingUser.username(), auth.username());
@@ -68,6 +70,7 @@ public class ServerFacadeTests {
     void logoutSuccess() throws Exception {
         AuthData auth = serverFacade.login(existingUser);
         serverFacade.logout(auth.authToken());
+
         assertDoesNotThrow(() -> serverFacade.login(existingUser));
     }
 
@@ -77,6 +80,13 @@ public class ServerFacadeTests {
         //second logout should fail
         serverFacade.logout(existingAuth);
         assertThrows(Exception.class, () -> serverFacade.logout(existingAuth));
+    }
+
+    @Test
+    public void createGameSuccess() throws Exception {
+        int result = serverFacade.createGame(existingAuth, new CreateGameRequest("game1"));
+
+        Assertions.assertTrue(result > 0, "Result returned invalid game ID");
     }
 
     @Test

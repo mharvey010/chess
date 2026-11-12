@@ -77,7 +77,7 @@ public class Server {
     }
 
     private void createGame(Context ctx) throws Exception {
-        String gameName = gson.fromJson(ctx.body(), GameData.class).gameName();
+        CreateGameRequest gameName = gson.fromJson(ctx.body(), CreateGameRequest.class);
         int result = gameService.createGame(ctx.header("authorization"), gameName);
         ctx.result(gson.toJson(Map.of("gameID", result)));
     }

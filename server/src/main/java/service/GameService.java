@@ -22,14 +22,14 @@ public class GameService {
         return gameDAO.listGames();
     }
 
-    public int createGame(String token, String gameName) throws Exception {
+    public int createGame(String token, CreateGameRequest request) throws Exception {
         if (authDAO.getAuth(token) == null) {
             throw new UnauthorizedException();
         }
-        if (gameName == null) {
+        if (request.gameName() == null) {
             throw new BadRequestException();
         }
-        return gameDAO.createGame(gameName);
+        return gameDAO.createGame(request.gameName());
     }
 
     public void joinGame(String token, JoinGameRequest request) throws Exception {

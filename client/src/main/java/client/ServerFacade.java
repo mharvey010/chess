@@ -37,10 +37,15 @@ public class ServerFacade {
     public Collection<GameData> listGames(String authToken) throws Exception {
         var request = buildRequest("GET", "/game", null, authToken);
         var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        return handleResponse(response, ListGamesResult.class).games();
+        ListGamesResult result = handleResponse(response, ListGamesResult.class);
+        return result.games();
     }
 
-    public int createGame(String authToken) throws Exception {
+    public int createGame(String authToken, CreateGameRequest gameName) throws Exception {
+        var request = buildRequest("POST", "/game", gameName, authToken);
+        var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        CreateGameResult result = handleResponse(response, CreateGameResult.class);
+        return result.gameID();
     }
 
     public void joinGame(String authToken) throws Exception {
