@@ -30,6 +30,8 @@ public class REPL {
                 if (validCommand(cmd, params)) {
                     result = client.eval(new Command(cmd, params));
                     System.out.print(result);
+                } else {
+                    System.out.print("Command or arguments invalid. Please enter a valid command.");
                 }
             } catch (Throwable e) {
                 var msg = e.toString();

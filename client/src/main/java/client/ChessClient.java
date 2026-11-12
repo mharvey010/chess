@@ -16,7 +16,7 @@ public class ChessClient {
         try {
             return switch (command.cmd()) {
                 case "register" -> register(command.params());
-//                case "login" -> login(params);
+                case "login" -> login(command.params());
 //                case "logout" -> logout();
 //                case "quit" -> "quit";
                 case "help" -> help();
@@ -38,10 +38,18 @@ public class ChessClient {
             throw new Exception(ex.getMessage());
         }
     }
-//
-//    private String login(String... params) throws Exception {
-//
-//    }
+
+    private String login(String... params) throws Exception {
+        try {
+            UserData user = new UserData(params[0], params[1], null);
+            AuthData auth = server.login(user);
+            authToken = auth.authToken();
+            username = auth.username();
+            return String.format("You are logged in as %s.", username);
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage());
+        }
+    }
 
     public String help() {
         if (authToken == null) {
