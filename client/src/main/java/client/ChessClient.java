@@ -18,6 +18,7 @@ public class ChessClient {
                 case "register" -> register(command.params());
                 case "login" -> login(command.params());
                 case "create" -> createGame(command.params());
+                case "join" -> joinGame(command.params());
 //                case "logout" -> logout();
                 case "quit" -> "quit";
                 case "help" -> help();
@@ -57,6 +58,18 @@ public class ChessClient {
         try {
             int gameID = server.createGame(authToken, new CreateGameRequest(params[0]));
             return String.format("The game %s has been created with ID - %d.", params[0], gameID);
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage());
+        }
+    }
+
+    private String joinGame(String... params) throws Exception {
+        assertLoggedIn();
+        try {
+            server.joinGame(authToken, new JoinGameRequest(params[0], Integer.parseInt(params[1])));
+            // set the current board to the game they joined.
+            // code here should actually call a method within the board renderer that prints out the board.
+            return "Successfully joined the game.";
         } catch (Exception ex) {
             throw new Exception(ex.getMessage());
         }

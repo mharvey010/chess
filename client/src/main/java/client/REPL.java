@@ -44,10 +44,21 @@ public class REPL {
     private boolean validCommand(String cmd, String... params) {
         return switch (cmd) {
             case "help", "quit", "logout", "list" -> params.length == 0;
-            case "login", "join" -> params.length == 2;
+            case "login" -> params.length == 2;
             case "register" -> params.length == 3;
-            case "create", "observe" -> params.length == 1;
+            case "create" -> params.length == 1;
+            case "join" -> params.length == 2 && isInteger(params[0]);
+            case "observe" -> params.length == 1 && isInteger(params[0]);
             default -> false;
         };
+    }
+
+    private boolean isInteger(String s) {
+        try {
+            Integer.parseInt(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }
