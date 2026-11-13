@@ -1,126 +1,137 @@
 package client;
 
 import model.*;
-
 import java.util.Collection;
+import static model.EvalResponse.ResultType.*;
 
 public class ChessClient {
 
     private final ServerFacade server;
     private String authToken = null;
     private String username = null;
+    private GameData currGame;
 
     public ChessClient(ServerFacade facade) {
         server = facade;
     }
 
-    public String eval(Command command) {
+    public EvalResponse eval(Command command) {
         try {
             return switch (command.cmd()) {
                 case "register" -> register(command.params());
                 case "login" -> login(command.params());
                 case "create" -> createGame(command.params());
-                case "list" -> listGames(command.params());
+                case "list" -> listGames();
                 case "join" -> joinGame(command.params());
                 case "observe" -> observe(command.params());
-                case "logout" -> logout(command.params());
-                case "quit" -> "quit";
+                case "logout" -> logout();
+                case "quit" -> new EvalResponse(QUIT, "quit");
                 case "help" -> help();
-                default -> "Unknown command. Please enter a valid command.";
+                default -> new EvalResponse(ERROR, "Unknown command. Please enter a valid command.");
             };
         } catch (Exception ex) {
-            return ex.getMessage();
+            return new EvalResponse(ERROR, ex.getMessage());
         }
     }
 
-    private String register(String... params) throws Exception {
+    private EvalResponse register(String... params) {
         try {
             UserData user = new UserData(params[0], params[1], params[2]);
             AuthData auth = server.register(user);
             authToken = auth.authToken();
             username = auth.username();
-            return String.format("You registered as %s.", username);
+            return new EvalResponse(SUCCESS, String.format("You registered as %s.", username));
         } catch (Exception ex) {
-            throw new Exception(ex.getMessage());
+            return new EvalResponse(ERROR, ex.getMessage());
         }
     }
 
-    private String login(String... params) throws Exception {
+    private EvalResponse login(String... params) {
         try {
             UserData user = new UserData(params[0], params[1], null);
             AuthData auth = server.login(user);
             authToken = auth.authToken();
             username = auth.username();
-            return String.format("You are logged in as %s.", username);
+            return new EvalResponse(SUCCESS, String.format("You are logged in as %s.", username));
         } catch (Exception ex) {
-            throw new Exception(ex.getMessage());
+            return new EvalResponse(ERROR, ex.getMessage());
         }
     }
 
-    private String logout(String... params) throws Exception {
+    private EvalResponse logout() throws Exception {
         assertLoggedIn();
         try {
             server.logout(authToken);
             authToken = null;
             username = null;
-            return "Logging out...";
+            return new EvalResponse(SUCCESS, "Logging out...");
         } catch (Exception ex) {
-            throw new Exception(ex.getMessage());
+            return new EvalResponse(ERROR, ex.getMessage());
         }
     }
 
-    private String createGame(String... params) throws Exception {
+    private EvalResponse createGame(String... params) throws Exception {
         assertLoggedIn();
         try {
             int gameID = server.createGame(authToken, new CreateGameRequest(params[0]));
-            return String.format("The game %s has been created with ID - %d.", params[0], gameID);
+            return new EvalResponse(SUCCESS, String.format("The game %s has been created with ID - %d.", params[0], gameID));
         } catch (Exception ex) {
-            throw new Exception(ex.getMessage());
+            return new EvalResponse(ERROR, ex.getMessage());
         }
     }
 
-    private String joinGame(String... params) throws Exception {
+    private EvalResponse joinGame(String... params) throws Exception {
         assertLoggedIn();
         try {
             server.joinGame(authToken, new JoinGameRequest(params[1].toUpperCase(), Integer.parseInt(params[0])));
-            // set the current board to the game they joined.
+            currGame = getGame(Integer.parseInt(params[0]));
             // code here should actually call a method within the board renderer that prints out the board.
-            return "Successfully joined the game.";
+            return new EvalResponse(BOARD, currGame.game());
         } catch (Exception ex) {
-            throw new Exception(ex.getMessage());
+            return new EvalResponse(ERROR, ex.getMessage());
         }
     }
 
-    private String observe(String... params) throws Exception {
+    private EvalResponse observe(String... params) throws Exception {
         assertLoggedIn();
         try {
             // display the game they request by calling the find game method
-            return "You are now observing the game";
+            GameData game = getGame(Integer.parseInt(params[0]));
+            return new EvalResponse(BOARD, game.game());
         } catch (Exception ex) {
-            throw new Exception(ex.getMessage());
+            return new EvalResponse(ERROR, ex.getMessage());
         }
     }
 
-    private String listGames(String... params) throws Exception {
+    private EvalResponse listGames() throws Exception {
         assertLoggedIn();
         try {
-            Collection<GameData> games = server.listGames(params[0]);
-            return games.toString();
+            Collection<GameData> games = server.listGames(authToken);
+            return new EvalResponse(GAMES_LIST, games);
         } catch (Exception ex) {
-            throw new Exception(ex.getMessage());
+            return new EvalResponse(ERROR, ex.getMessage());
         }
     }
 
-    public String help() {
+    private GameData getGame(int id) throws Exception {
+        for (GameData game : server.listGames(authToken)) {
+            if (game.gameID() == id) {
+                return game;
+            }
+        }
+        throw new Exception("Game not found");
+    }
+
+    public EvalResponse help() {
         if (authToken == null) {
-            return """
+            return new EvalResponse(SUCCESS, """
                     - register <USERNAME> <PASSWORD> <EMAIL>
                     - login <USERNAME> <PASSWORD>
                     - quit
                     - help
-                    """;
+                    """);
         }
-        return """
+        return new EvalResponse(SUCCESS, """
                 - create <NAME>
                 - list
                 - join <ID> [WHITE|BLACK]
@@ -128,12 +139,16 @@ public class ChessClient {
                 - logout
                 - quit
                 - help
-                """;
+                """);
     }
 
     private void assertLoggedIn() throws Exception {
         if (authToken == null) {
             throw new Exception("You need to sign in");
         }
+    }
+
+    public String getAuthToken() {
+        return authToken;
     }
 }

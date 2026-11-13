@@ -1,11 +1,11 @@
 package client;
 
 import model.Command;
-
+import model.EvalResponse;
 import java.util.Arrays;
 import java.util.Scanner;
-
 import static ui.EscapeSequences.*;
+import static model.EvalResponse.ResultType.*;
 
 public class REPL {
     private final ChessClient client;
@@ -16,12 +16,15 @@ public class REPL {
 
     public void run() {
         System.out.println("Chess Game :)");
-        System.out.print(client.help());
+        System.out.print(client.help().data());
 
         Scanner scanner = new Scanner(System.in);
-        var result = "";
-        while (!result.equals("quit")) {
-            System.out.print("\n" + RESET_TEXT_COLOR + RESET_BG_COLOR + ">>> ");
+        EvalResponse result = new EvalResponse(SUCCESS, "");
+        while (result.type() != QUIT) {
+            String loginStatus = client.getAuthToken() != null ?
+                    SET_TEXT_COLOR_BLUE + "[LOGGED IN] " :
+                    SET_TEXT_COLOR_YELLOW + "[LOGGED OUT] ";
+            System.out.print("\n" + loginStatus + RESET_TEXT_COLOR + RESET_BG_COLOR + ">>> ");
             String line = scanner.nextLine();
             try {
                 String[] tokens = line.toLowerCase().split(" ");
@@ -29,7 +32,7 @@ public class REPL {
                 String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
                 if (validCommand(cmd, params)) {
                     result = client.eval(new Command(cmd, params));
-                    System.out.print(result);
+                    System.out.print(result.data());
                 } else {
                     System.out.print("Command or arguments invalid. Please enter a valid command.");
                 }
