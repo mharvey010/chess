@@ -2,6 +2,8 @@ package client;
 
 import model.*;
 
+import java.util.Collection;
+
 public class ChessClient {
 
     private final ServerFacade server;
@@ -18,8 +20,10 @@ public class ChessClient {
                 case "register" -> register(command.params());
                 case "login" -> login(command.params());
                 case "create" -> createGame(command.params());
+                case "list" -> listGames(command.params());
                 case "join" -> joinGame(command.params());
-//                case "logout" -> logout();
+                case "observe" -> observe(command.params());
+                case "logout" -> logout(command.params());
                 case "quit" -> "quit";
                 case "help" -> help();
                 default -> "Unknown command. Please enter a valid command.";
@@ -53,6 +57,18 @@ public class ChessClient {
         }
     }
 
+    private String logout(String... params) throws Exception {
+        assertLoggedIn();
+        try {
+            server.logout(authToken);
+            authToken = null;
+            username = null;
+            return "Logging out...";
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage());
+        }
+    }
+
     private String createGame(String... params) throws Exception {
         assertLoggedIn();
         try {
@@ -70,6 +86,26 @@ public class ChessClient {
             // set the current board to the game they joined.
             // code here should actually call a method within the board renderer that prints out the board.
             return "Successfully joined the game.";
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage());
+        }
+    }
+
+    private String observe(String... params) throws Exception {
+        assertLoggedIn();
+        try {
+            // display the game they request by calling the find game method
+            return "You are now observing the game";
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage());
+        }
+    }
+
+    private String listGames(String... params) throws Exception {
+        assertLoggedIn();
+        try {
+            Collection<GameData> games = server.listGames(params[0]);
+            return games.toString();
         } catch (Exception ex) {
             throw new Exception(ex.getMessage());
         }
