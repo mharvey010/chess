@@ -82,7 +82,7 @@ public class ChessClient {
     private String joinGame(String... params) throws Exception {
         assertLoggedIn();
         try {
-            server.joinGame(authToken, new JoinGameRequest(params[0], Integer.parseInt(params[1])));
+            server.joinGame(authToken, new JoinGameRequest(params[1].toUpperCase(), Integer.parseInt(params[0])));
             // set the current board to the game they joined.
             // code here should actually call a method within the board renderer that prints out the board.
             return "Successfully joined the game.";
