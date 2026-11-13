@@ -17,8 +17,9 @@ public class ChessClient {
             return switch (command.cmd()) {
                 case "register" -> register(command.params());
                 case "login" -> login(command.params());
+                case "create" -> createGame(command.params());
 //                case "logout" -> logout();
-//                case "quit" -> "quit";
+                case "quit" -> "quit";
                 case "help" -> help();
                 default -> "Unknown command. Please enter a valid command.";
             };
@@ -51,6 +52,16 @@ public class ChessClient {
         }
     }
 
+    private String createGame(String... params) throws Exception {
+        assertLoggedIn();
+        try {
+            int gameID = server.createGame(authToken, new CreateGameRequest(params[0]));
+            return String.format("The game %s has been created with ID - %d.", params[0], gameID);
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage());
+        }
+    }
+
     public String help() {
         if (authToken == null) {
             return """
@@ -71,7 +82,9 @@ public class ChessClient {
                 """;
     }
 
-    public String getAuthToken() {
-        return authToken;
+    private void assertLoggedIn() throws Exception {
+        if (authToken == null) {
+            throw new Exception("You need to sign in");
+        }
     }
 }
