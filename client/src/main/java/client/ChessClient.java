@@ -10,6 +10,7 @@ public class ChessClient {
     private String authToken = null;
     private String username = null;
     private GameData currGame;
+    private String userRole;
 
     public ChessClient(ServerFacade facade) {
         server = facade;
@@ -85,8 +86,8 @@ public class ChessClient {
         try {
             server.joinGame(authToken, new JoinGameRequest(params[1].toUpperCase(), Integer.parseInt(params[0])));
             currGame = getGame(Integer.parseInt(params[0]));
-            // code here should actually call a method within the board renderer that prints out the board.
-            return new EvalResponse(BOARD, currGame.game());
+            userRole = "PLAYER";
+            return new EvalResponse(BOARD, currGame);
         } catch (Exception ex) {
             return new EvalResponse(ERROR, ex.getMessage());
         }
@@ -95,9 +96,9 @@ public class ChessClient {
     private EvalResponse observe(String... params) throws Exception {
         assertLoggedIn();
         try {
-            // display the game they request by calling the find game method
             GameData game = getGame(Integer.parseInt(params[0]));
-            return new EvalResponse(BOARD, game.game());
+            userRole = "OBSERVER";
+            return new EvalResponse(BOARD, game);
         } catch (Exception ex) {
             return new EvalResponse(ERROR, ex.getMessage());
         }
@@ -125,6 +126,7 @@ public class ChessClient {
     public EvalResponse help() {
         if (authToken == null) {
             return new EvalResponse(SUCCESS, """
+                    
                     - register <USERNAME> <PASSWORD> <EMAIL>
                     - login <USERNAME> <PASSWORD>
                     - quit
@@ -132,6 +134,7 @@ public class ChessClient {
                     """);
         }
         return new EvalResponse(SUCCESS, """
+                
                 - create <NAME>
                 - list
                 - join <ID> [WHITE|BLACK]
@@ -150,5 +153,13 @@ public class ChessClient {
 
     public String getAuthToken() {
         return authToken;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getUserRole() {
+        return userRole;
     }
 }
