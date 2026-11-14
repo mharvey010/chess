@@ -56,9 +56,10 @@ public class GameService {
         }
     }
 
-    private boolean isBadJoinRequest(JoinGameRequest request) {
+    private boolean isBadJoinRequest(JoinGameRequest request) throws Exception {
         return request.playerColor() == null ||
-                request.gameID() == null || !(
+                request.gameID() == null ||
+                gameDAO.getGame(request.gameID()) == null || !(
                 Objects.equals(request.playerColor(), "WHITE") ||
                 Objects.equals(request.playerColor(), "BLACK"));
     }

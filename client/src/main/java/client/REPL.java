@@ -96,7 +96,7 @@ public class REPL {
                     pieceType = pieceString(piece.getPieceType());
                     System.out.print(pieceColor);
                 }
-                String squareColor = (row + col) % 2 == 0 ? SET_BG_COLOR_LIGHT_GREY : SET_BG_COLOR_BLACK;
+                String squareColor = (row + col) % 2 == 1 ? SET_BG_COLOR_LIGHT_GREY : SET_BG_COLOR_BLACK;
                 System.out.print(squareColor);
                 System.out.print(" " + pieceType + " ");
             }
