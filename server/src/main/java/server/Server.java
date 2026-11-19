@@ -8,6 +8,7 @@ import io.javalin.*;
 import io.javalin.http.Context;
 import dataaccess.*;
 import model.*;
+import server.websocket.WebsocketHandler;
 import service.*;
 
 import java.util.Collection;
@@ -23,6 +24,7 @@ public class Server {
     private final UserService userService = new UserService(userDAO, authDAO);
     private final GameService gameService = new GameService(gameDAO, authDAO);
     private final Gson gson = new Gson();
+    private final WebsocketHandler websocketHandler = new WebsocketHandler();
 
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
@@ -36,12 +38,9 @@ public class Server {
         javalin.post("/game", this::createGame);
         javalin.put("/game", this::joinGame);
         javalin.ws("/ws", ws -> {
-            ws.onConnect(ctx -> {
-                ctx.enableAutomaticPings();
-                System.out.println("WebSocket connected");
-            });
-            ws.onMessage(ctx -> ctx.send(ctx.message()));
-            ws.onClose(ctx -> System.out.println("WebSocket closed"));
+            ws.onConnect(websocketHandler);
+            ws.onMessage(websocketHandler);
+            ws.onClose(websocketHandler);
         });
 
 
