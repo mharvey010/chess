@@ -76,8 +76,7 @@ public class REPL {
         ChessGame game = gameInfo.game();
         ChessBoard board = game.getBoard();
 
-        boolean isWhite = Objects.equals(client.getUsername(), gameInfo.whiteUsername()) ||
-                          Objects.equals(client.getUserRole(), "OBSERVER");
+        boolean isWhite = !Objects.equals(client.getUserRole(), "BLACK");
 
         printHeader(isWhite);
         for (int i = 0; i < 8; i++) {

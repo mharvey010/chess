@@ -86,7 +86,7 @@ public class ChessClient {
         try {
             server.joinGame(authToken, new JoinGameRequest(params[1].toUpperCase(), Integer.parseInt(params[0])));
             currGame = getGame(Integer.parseInt(params[0]));
-            userRole = "PLAYER";
+            userRole = params[1].toUpperCase();
             return new EvalResponse(BOARD, currGame);
         } catch (Exception ex) {
             return new EvalResponse(ERROR, ex.getMessage());
